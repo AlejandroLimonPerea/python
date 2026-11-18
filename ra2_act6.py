@@ -19,7 +19,6 @@ evidencia_original = (
     trama_red[4]        # severidad (str)
 )
 
-print(trama_red)
 
 # [FASE 2] Iniciando análisis automatizado del incidente...
 def analizar_incidente(evidencia: tuple) -> bool:
@@ -43,7 +42,13 @@ def analizar_incidente(evidencia: tuple) -> bool:
 
 
 
+def hola(mensaje):
+    print(mensaje)
 
+
+
+
+hola("print")
 
 
 
