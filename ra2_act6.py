@@ -6,7 +6,6 @@ críticos y permite el saneamiento seguro mediante conversión temporal a lista
 PUERTOS_CRITICOS = (22, 80, 443, 3389)
 
 
-# [FASE 2] Iniciando análisis automatizado del incidente...
 def analizar_incidente(evidencia: tuple) -> bool:
     """
     Analiza una evidencia forense inmutable y evalúa si el puerto es crítico
@@ -19,6 +18,8 @@ def analizar_incidente(evidencia: tuple) -> bool:
 
     # Desempaquetado obligatorio en una sola línea
     fecha, ip, puerto, hash_evidencia, gravedad = evidencia
+    
+    es_critico = puerto in PUERTOS_CRITICOS
 
     # Formateo del hash: primeros 6 + "..." + últimos 7 caracteres
     hash_formateado = hash_evidencia[:6] + "..." + hash_evidencia[-7:]
@@ -29,7 +30,7 @@ def analizar_incidente(evidencia: tuple) -> bool:
     print(f"📅 Fecha y Hora: \t{fecha}")
     print(f"🌐 IP Origen: \t\t{ip}")
 
-    if puerto in PUERTOS_CRITICOS:
+    if es_critico:
         print(f"🎯 Puerto Destino: {puerto} [ALERTA: PUERTO CRÍTICO DETECTADO]")
     else:
         print(f"🎯 Puerto Destino: {puerto}")
@@ -40,8 +41,6 @@ def analizar_incidente(evidencia: tuple) -> bool:
 
 def marcar_falso_positivo(evidencia: tuple) -> tuple:
     """
-    Escanea una evidencia forense marcándola como FALSO_POSITIVO.
-
     Convierte la tupla a lista, modifica la severidad (último elemento)
     y re-convierte a tupla inmutable
 
@@ -49,55 +48,59 @@ def marcar_falso_positivo(evidencia: tuple) -> tuple:
     :return: Nueva tupla inmutable con la severidad actualizada
     """
 
-
-"""
-3. Fase 3: Mitigación y Re-bloqueo (marcar_falso_positivo)
-• Firma: marcar_falso_positivo(evidencia: tuple) -> tuple
-• Docstring: Explicación formal de la función.
-• Lógica:
-1. Recibe la tupla inmutable evidencia.
-2. Convierte la tupla a lista usando list().
-3. Modifica la posición correspondiente a la severidad (último elemento) asignándole el
-valor "FALSO_POSITIVO".
-4. Convierte de nuevo la lista a tupla inmutable mediante tuple().
-5. Retorna la nueva tupla saneada.
-"""
+    lista_temporal = list(evidencia)
+    lista_temporal[-1] = "FALSO_POSITIVO"
+    return tuple(lista_temporal)
 
 
+# Flujo principal
+print("🕵️ SOC INCIDENT RESPONSE & FORENSICS TOOL - UNIT 2.6")
+print("Cargando bases de datos de puertos críticos... OK")
 
 
+print("[FASE 1] Recolectando evidencia física inmutable...")
 
-# [FASE 1] Recolectando evidencia física inmutable...
-trama_red = "2026-09-05 10:15:32_185.220.101.5_3389_a5c3e800fd2e411_ALTO".split("_")
+trama_red = "2026-09-05 10:15:32_185.220.101.5_3389_a5c3e800fd2e411_ALTO"
+campos = trama_red.split("_")
+
+timestamp = campos[0]
+ip_origen = campos[1]
+puerto_destino = int(campos[2])
+hash_malware = campos[3]
+severidad = campos[4]
+
 evidencia_original = (
-    trama_red[0],       # timestamp (str)
-    trama_red[1],       # ip_origen (str)
-    int(trama_red[2]),  # puerto_destino (int)
-    trama_red[3],       # hash_malware (str)
-    trama_red[4]        # severidad (str)
-)
+    timestamp, ip_origen, puerto_destino, hash_malware, severidad)
+
+print("Evidencia bloqueada en memoria con éxito. "
+      f"Tipo: {type(evidencia_original)}")
 
 
-"""
-• Conversión segura para modificación: La función marcar_falso_positivo debe
-convertir la tupla a lista con list(), realizar la edición, y re-convertirla a tupla con
-tuple().
-"""
+print("[FASE 2] Iniciando análisis automatizado del incidente...")
+analizar_incidente(evidencia_original)
+
+respuesta = input("¿Deseas mitigar este incidente como Falso Positivo? (s/n): ")
+respuesta = respuesta.strip().lower()
 
 
+if respuesta == "s":
+    print("[FASE 3] Saneando base de datos forense...")
+    print("Convirtiendo datos temporales para su edición... OK")
+    
+    evidencia_final = marcar_falso_positivo(evidencia_original)
+    
+    print("Re-bloqueando evidencia final del incidente... OK")
+    print("[REPORTE DE AUDITORÍA FINAL]")
+    print(f"Contenido final seguro: {evidencia_final}")
+else:
+    evidencia_final = evidencia_original
+    print("[FASE 3] Mitigación cancelada. Se conserva la evidencia original.")
+    print(f"Contenido final: {evidencia_final}")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Verificación de integridad física: intento de mutación bloqueado
+try:
+    evidencia_final[2] = 9999
+    print("ERROR: La tupla ha sido alterada (esto no debería ocurrir).")
+except TypeError:
+    print("Verificación de integridad física: Intento de alteración de tupla "
+          "final -> Bloqueado por el intérprete de Python (TypeError).")
