@@ -41,7 +41,7 @@ def analizar_incidente(evidencia: tuple) -> bool:
 
 
 
-# PRUEBA GIT
+# PRUEBA GIT marica
 
 
 def hola(mensaje):
